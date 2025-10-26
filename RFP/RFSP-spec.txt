@@ -1,0 +1,121 @@
+Recipe File Storage Protocol
+
+Offset  Size    Description
+------  ------  ----------------------------------------------------------
+00h     04      Magic Bytes: "RFSP"
+04h     02      Version (uint16, little-endian)
+06h     02      Header Size (uint16)
+08h     04      Chunk Count (uint32)
+0Ch     02      Flags (bitfield)
+0Eh     04      Reserved (zeros)
+12h     ..      (End of header)
+
+-- BEGIN CHUNK AREA ------------------------------------------------------
+
+## Generic Chunk Structure
+Offset  Size    Description
+------  ------  ----------------------------------------------------------
+00h     04      Chunk Type (char[4])        e.g. "CORE", "INGR", "STEP"
+04h     04      Chunk Size (uint32 LE)      Size of payload in bytes
+08h     N       Chunk Payload (variable)
+08h+N   04      CRC32 (uint32 LE)           Payload CRC
+
+Repeat for each chunk, as indicated by "Chunk Count" in header.
+
+--------------------------------------------------------------------------
+
+## Example Layout (typical recipe)
+--------------------------------------------------------------------------
+
+# HEADER (18 bytes total)
+0000h: 52 46 50 31       "RFP1"
+0004h: 01 00             Version = 1
+0006h: 12 00             Header size = 18 bytes
+0008h: 08 00 00 00       Chunk count = 8
+000Ch: 00 00             Flags = 0
+000Eh: 00 00 00 00       Reserved
+
+# CHUNK 1: META (author)
+0012h: 4D 45 54 41       "META"
+0016h: 18 00 00 00       Size = 24 bytes
+001Ah: 61 75 74 68 6F 72 00 4A 61 6E 65 20 44 6F 65 00 ...
+        "author\0Jane Doe\0"
+0032h: [CRC32]           CRC for payload
+
+# CHUNK 2: CORE
+0036h: 43 4F 52 45       "CORE"
+003Ah: 24 00 00 00       Size = 36 bytes
+003Eh: 69 6D 67 73 2F 70 69 63 2E 70 6E 67 00 ...          Image path
+        [null term string]
+...   : [PrepTime u16][CookTime u16][AddTime u16][TotalTime u16][Servings u16]
+...   : [Padding/Reserved if needed]
+...   : [CRC32]
+
+# CHUNK 3: INGR
+---->  "INGR" | size | quantity (float32) | unit\0 | name\0 | CRC32
+
+# CHUNK 4..N: STEP
+---->  "STEP" | size | step_num (u16) | text\0 | CRC32
+
+# CHUNK (optional): NUTR
+---->  "NUTR" | size | cal(u16) | prot(f32) | fat(f32) | carbs(f32) | CRC32
+
+# CHUNK (optional): TAG 
+---->  "TAG " | size | count(u16) | tag1\0 tag2\0 ... | CRC32
+
+# OPTIONAL GLOBAL CRC (not counted as chunk)
+---->  [CRC32] validates entire file payloads if enabled by flag bit 0x01
+
+--------------------------------------------------------------------------
+
+## VISUAL CHUNK STACK
+
++------------------------------------------------------+
+| RFP HEADER                                           |
++------------------------------------------------------+
+| "META"  Author info (key/value) + CRC                |
++------------------------------------------------------+
+| "CORE"  Main recipe info + CRC                       |
++------------------------------------------------------+
+| "INGR"  Ingredient 1 + CRC                           |
+| "INGR"  Ingredient 2 + CRC                           |
+| ...                                                  |
++------------------------------------------------------+
+| "STEP"  Direction 1 + CRC                            |
+| "STEP"  Direction 2 + CRC                            |
+| ...                                                  |
++------------------------------------------------------+
+| "NUTR"  Nutrition info (optional) + CRC              |
+| "TAG "  Tags (optional) + CRC                        |
++------------------------------------------------------+
+| [Global CRC32] (optional, outside chunks)            |
++------------------------------------------------------+
+
+--------------------------------------------------------------------------
+
+## BYTE ORDER & ENCODING
+- All integers are **little-endian**.
+- All strings are **UTF-8**, **null-terminated**.
+- Floating-point values use **IEEE 754 binary32** format.
+- Alignment: none required (packed format).
+
+--------------------------------------------------------------------------
+
+## EXTENSION STRATEGY
+Future versions may:
+- Introduce new chunk types (ignored if unknown)
+- Expand the header (header size field prevents misalignment)
+- Define new flag bits (e.g., compression, encryption)
+- Add new metadata block types (always chunk-based)
+
+--------------------------------------------------------------------------
+
+## VALIDATION
+- Verify `"RFP1"` magic number.
+- Ensure header and chunk boundaries do not exceed file size.
+- Validate CRC per chunk.
+- Optionally verify file-wide CRC if flag bit 0x01 is set.
+- Skip and preserve unknown chunks.
+
+--------------------------------------------------------------------------
+
