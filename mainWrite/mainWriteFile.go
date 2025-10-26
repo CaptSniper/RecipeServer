@@ -8,7 +8,7 @@ import (
 	"strconv"
 	"strings"
 
-	"../rfp"
+	rfp "github.com/CaptSniper/RecipeServer/RFP"
 )
 
 func main() {

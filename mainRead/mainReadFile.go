@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"log"
 
-	"../rfp"
+	rfp "github.com/CaptSniper/RecipeServer/RFP"
 )
 
 func main() {
