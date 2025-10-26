@@ -1,4 +1,3 @@
-// rfp3writer.go
 package rfp
 
 import (
@@ -8,7 +7,7 @@ import (
 	"os"
 )
 
-// writeChunk writes a chunk to the buffer with 8-byte alignment
+// writeChunk creates a chunk to the buffer with 8-byte alignment
 func writeChunk(buf *bytes.Buffer, chunkType string, payload []byte) error {
 	if len(chunkType) != 4 {
 		return fmt.Errorf("chunk type must be 4 characters")
@@ -25,7 +24,7 @@ func writeChunk(buf *bytes.Buffer, chunkType string, payload []byte) error {
 	return nil
 }
 
-// WriteRecipe writes a Recipe struct into a binary RFP3 file
+// WriteRecipe writes a Recipe struct into a binary RFP file
 func WriteRecipe(filename string, r Recipe) error {
 	buf := &bytes.Buffer{}
 
@@ -41,11 +40,12 @@ func WriteRecipe(filename string, r Recipe) error {
 
 	// --- CORE CHUNK ---
 	corePayload := &bytes.Buffer{}
-	binary.Write(corePayload, binary.LittleEndian, r.PrepTimeMin)
-	binary.Write(corePayload, binary.LittleEndian, r.CookTimeMin)
+	binary.Write(corePayload, binary.LittleEndian, r.PrepTime)
+	binary.Write(corePayload, binary.LittleEndian, r.CookTime)
 	binary.Write(corePayload, binary.LittleEndian, r.AdditionalTime)
-	binary.Write(corePayload, binary.LittleEndian, r.TotalTimeMin)
-	binary.Write(corePayload, binary.LittleEndian, r.Servings)
+	binary.Write(corePayload, binary.LittleEndian, r.TotalTime)
+	binary.Write(corePayload, binary.LittleEndian, uint16(len(r.Servings)))
+	corePayload.WriteString(r.Servings)
 
 	binary.Write(corePayload, binary.LittleEndian, uint16(len(r.ImagePath)))
 	corePayload.WriteString(r.ImagePath)

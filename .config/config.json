@@ -1,0 +1,7 @@
+{
+  "default_recipe_path": "recipes/",
+  "display_ingredients_numbered": true,
+  "display_steps_numbered": true,
+  "max_ingredients": 50,
+  "max_steps": 100
+}

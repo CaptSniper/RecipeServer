@@ -60,11 +60,16 @@ func ReadRecipeFile(filename string) (*Recipe, error) {
 
 		switch chunkType {
 		case "CORE":
-			binary.Read(rdr, binary.LittleEndian, &recipe.PrepTimeMin)
-			binary.Read(rdr, binary.LittleEndian, &recipe.CookTimeMin)
+			binary.Read(rdr, binary.LittleEndian, &recipe.PrepTime)
+			binary.Read(rdr, binary.LittleEndian, &recipe.CookTime)
 			binary.Read(rdr, binary.LittleEndian, &recipe.AdditionalTime)
-			binary.Read(rdr, binary.LittleEndian, &recipe.TotalTimeMin)
-			binary.Read(rdr, binary.LittleEndian, &recipe.Servings)
+			binary.Read(rdr, binary.LittleEndian, &recipe.TotalTime)
+
+			var servings uint16
+			binary.Read(rdr, binary.LittleEndian, &servings)
+			servingsBytes := make([]byte, servings)
+			rdr.Read(servingsBytes)
+			recipe.Servings = string(servingsBytes)
 
 			var pathLen uint16
 			binary.Read(rdr, binary.LittleEndian, &pathLen)

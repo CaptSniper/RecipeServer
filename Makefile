@@ -1,45 +1,44 @@
 # Go settings
 GO := go
 BIN_DIR := bin
+EXE :=
 
-# Binary base names
-READER_BIN := read_recipe
-WRITER_BIN := create_recipe
-
-# Detect OS for extension
 ifeq ($(OS),Windows_NT)
-    EXE := .exe
-else
-    EXE :=
+	EXE := .exe
 endif
 
+# Executable name
+APP_NAME := recipe_tool
+
 # Default target: build for current OS
-all: $(BIN_DIR)/$(READER_BIN)$(EXE) $(BIN_DIR)/$(WRITER_BIN)$(EXE)
+all: build
 
-# Ensure bin directory exists
+# Create bin folder if it doesn't exist
 $(BIN_DIR):
+ifeq ($(OS),Windows_NT)
+	if not exist $(BIN_DIR) mkdir $(BIN_DIR)
+else
 	mkdir -p $(BIN_DIR)
+endif
 
-# Build reader binary
-$(BIN_DIR)/$(READER_BIN)$(EXE): mainRead/mainRead.go rfp/*.go | $(BIN_DIR)
-	$(GO) build -o $@ mainRead/mainRead.go
+# Build for current OS
+build: $(BIN_DIR)
+	$(GO) build -o $(BIN_DIR)/$(APP_NAME)$(EXE) main.go
 
-# Build writer binary
-$(BIN_DIR)/$(WRITER_BIN)$(EXE): mainWrite/mainWrite.go rfp/*.go | $(BIN_DIR)
-	$(GO) build -o $@ mainWrite/mainWrite.go
+# Build Linux 64-bit binary (from any OS)
+# linux64: $(BIN_DIR)
+# ifeq ($(OS),Windows_NT)
+# 	@echo "Cross-compiling Linux binaries from Windows requires WSL or proper environment variables."
+# else
+# 	GOOS=linux GOARCH=amd64 $(GO) build -o $(BIN_DIR)/$(APP_NAME)_linux main/main.go
+# endif
 
-# Cross-compile for Linux
-linux: | $(BIN_DIR)
-	GOOS=linux GOARCH=amd64 $(GO) build -o $(BIN_DIR)/$(READER_BIN)_linux mainRead/mainRead.go
-	GOOS=linux GOARCH=amd64 $(GO) build -o $(BIN_DIR)/$(WRITER_BIN)_linux mainWrite/mainWrite.go
-
-# Cross-compile for Windows
-windows: | $(BIN_DIR)
-	GOOS=windows GOARCH=amd64 $(GO) build -o $(BIN_DIR)/$(READER_BIN)_windows.exe mainRead/mainRead.go
-	GOOS=windows GOARCH=amd64 $(GO) build -o $(BIN_DIR)/$(WRITER_BIN)_windows.exe mainWrite/mainWrite.go
-
-# Clean build artifacts
+# Clean bin folder
 clean:
+ifeq ($(OS),Windows_NT)
+	cmd /C "if exist $(BIN_DIR) rmdir /s /q $(BIN_DIR)"
+else
 	rm -rf $(BIN_DIR)
+endif
 
-.PHONY: all clean linux windows
+.PHONY: all build linux64 clean
