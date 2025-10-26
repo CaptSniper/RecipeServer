@@ -5,6 +5,8 @@ import (
 	"encoding/binary"
 	"fmt"
 	"os"
+	"path/filepath"
+	"regexp"
 )
 
 // writeChunk creates a chunk to the buffer with 8-byte alignment
@@ -25,7 +27,7 @@ func writeChunk(buf *bytes.Buffer, chunkType string, payload []byte) error {
 }
 
 // WriteRecipe writes a Recipe struct into a binary RFP file
-func WriteRecipe(filename string, r Recipe) error {
+func WriteRecipe(dir, filename string, r Recipe) error {
 	buf := &bytes.Buffer{}
 
 	// --- HEADER ---
@@ -40,10 +42,14 @@ func WriteRecipe(filename string, r Recipe) error {
 
 	// --- CORE CHUNK ---
 	corePayload := &bytes.Buffer{}
-	binary.Write(corePayload, binary.LittleEndian, r.PrepTime)
-	binary.Write(corePayload, binary.LittleEndian, r.CookTime)
-	binary.Write(corePayload, binary.LittleEndian, r.AdditionalTime)
-	binary.Write(corePayload, binary.LittleEndian, r.TotalTime)
+	binary.Write(corePayload, binary.LittleEndian, uint16(len(r.PrepTime)))
+	corePayload.WriteString(r.PrepTime)
+	binary.Write(corePayload, binary.LittleEndian, uint16(len(r.CookTime)))
+	corePayload.WriteString(r.CookTime)
+	binary.Write(corePayload, binary.LittleEndian, uint16(len(r.AdditionalTime)))
+	corePayload.WriteString(r.AdditionalTime)
+	binary.Write(corePayload, binary.LittleEndian, uint16(len(r.TotalTime)))
+	corePayload.WriteString(r.TotalTime)
 	binary.Write(corePayload, binary.LittleEndian, uint16(len(r.Servings)))
 	corePayload.WriteString(r.Servings)
 
@@ -77,5 +83,8 @@ func WriteRecipe(filename string, r Recipe) error {
 	binary.LittleEndian.PutUint32(data[0x08:], uint32(chunkCount))
 
 	// --- WRITE FILE ---
-	return os.WriteFile(filename, data, 0644)
+	var nonAlphanumericRegex = regexp.MustCompile(`[^a-zA-Z0-9]+`)
+
+	filename = nonAlphanumericRegex.ReplaceAllString(filename, "")
+	return os.WriteFile(filepath.Join(dir, filename+".rfp"), data, 0644)
 }

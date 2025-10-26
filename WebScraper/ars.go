@@ -3,7 +3,6 @@ package ars
 import (
 	"fmt"
 	"net/http"
-	"strconv"
 	"strings"
 
 	"io"
@@ -23,6 +22,7 @@ type Ingredient struct {
 
 // ScrapeAllRecipes fetches a URL from AllRecipes and extracts structured recipe data
 func ScrapeAllRecipes(url, imagePath string) (*rfp.Recipe, error) {
+
 	resp, err := http.Get(url)
 	if err != nil {
 		return nil, fmt.Errorf("failed to fetch URL: %v", err)
@@ -40,43 +40,41 @@ func ScrapeAllRecipes(url, imagePath string) (*rfp.Recipe, error) {
 
 	data := &rfp.Recipe{}
 
+	recipeName := strings.TrimSpace(doc.Find("div#article-header--recipe_1-0 h1").First().Text())
+	data.Name = recipeName
+
 	// --- 1. Image ---
-	doc.Find("div#article__photo-ribbon_1-0 a").First().Find("img").Each(func(i int, s *goquery.Selection) {
-		if src, exists := s.Attr("src"); exists {
-			DownloadImage(src, imagePath)
-			data.ImagePath = src
+	doc.Find("div#photo-dialog__item_1-0 img").Each(func(i int, s *goquery.Selection) {
+		fmt.Println(s)
+		fmt.Println(s.Attr("src"))
+		if src, exists := s.Attr("src"); exists && src != "" {
+			DownloadImage(src, imagePath, data.Name)
+			data.ImagePath = imagePath + "\\" + data.Name
 		}
 	})
 
 	// --- 2. Times & Servings ---
-	doc.Find("div#mm-recipes-details_1-0 div").Each(func(i int, s *goquery.Selection) {
-		if s.HasClass("mm-recipes-details__label") {
-			label := strings.TrimSpace(s.Text())
-			valueSel := s.Next() // value div should be next sibling
-			if valueSel != nil && valueSel.HasClass("mm-recipes-details__value") {
-				value := strings.TrimSpace(valueSel.Text())
-				switch strings.ToLower(label) {
-				case "prep time":
-					v, _ := strconv.Atoi(value)
-					data.PrepTime = uint16(v)
-				case "cook time":
-					v, _ := strconv.Atoi(value)
-					data.CookTime = uint16(v)
-				case "additional time":
-					v, _ := strconv.Atoi(value)
-					data.AdditionalTime = uint16(v)
-				case "total time":
-					v, _ := strconv.Atoi(value)
-					data.TotalTime = uint16(v)
-				case "servings":
-					data.Servings = value
-				}
-			}
+	doc.Find("div#mm-recipes-details_1-0 div.mm-recipes-details__item").Each(func(i int, s *goquery.Selection) {
+		label := strings.TrimSpace(s.Find("div.mm-recipes-details__label").Text())
+		value := strings.TrimSpace(s.Find("div.mm-recipes-details__value").Text())
+
+		switch strings.ToLower(label) {
+		case "prep time:":
+			data.PrepTime = value
+		case "cook time:":
+			data.CookTime = value
+		case "total time:":
+			data.TotalTime = value
+		case "additional time:":
+			data.AdditionalTime = value
+		case "servings:":
+			data.Servings = value
+			fmt.Println(value)
 		}
 	})
 
 	// --- 3. Ingredients ---
-	doc.Find("div.mm-recipes-structured-ingredients__list").First().Find("li").Each(func(i int, s *goquery.Selection) {
+	doc.Find("div#mm-recipes-structured-ingredients_1-0").Find("ul").First().Find("li").Each(func(i int, s *goquery.Selection) {
 		p := s.Find("p").First()
 		spans := p.Find("span")
 		ing := Ingredient{
@@ -85,12 +83,12 @@ func ScrapeAllRecipes(url, imagePath string) (*rfp.Recipe, error) {
 			Name:     strings.TrimSpace(spans.Eq(2).Text()),
 		}
 
-		data.Ingredients = append(data.Ingredients, ing.Quantity, ing.Unit, ing.Name)
+		data.Ingredients = append(data.Ingredients, ing.Quantity+" "+ing.Unit+" "+ing.Name)
 	})
 
 	// --- 4. Steps / Directions ---
 	doc.Find("div#mm-recipes-steps__content_1-0 ol li").Each(func(i int, s *goquery.Selection) {
-		stepText := strings.TrimSpace(s.Find("p").Text())
+		stepText := strings.TrimSpace(s.Find("p").First().Text())
 		if stepText != "" {
 			data.Steps = append(data.Steps, stepText)
 		}
@@ -101,7 +99,7 @@ func ScrapeAllRecipes(url, imagePath string) (*rfp.Recipe, error) {
 
 // DownloadImage downloads an image from the given URL and saves it to the specified directory.
 // It returns the full path to the saved image.
-func DownloadImage(url, saveDir string) (string, error) {
+func DownloadImage(url, saveDir, saveName string) (string, error) {
 	if url == "" {
 		return "", fmt.Errorf("empty image URL")
 	}
@@ -117,7 +115,7 @@ func DownloadImage(url, saveDir string) (string, error) {
 	tokens := strings.Split(url, "/")
 	filename := tokens[len(tokens)-1]
 	if filename == "" {
-		filename = "image.jpg"
+		filename = saveName + ".jpg"
 	}
 
 	savePath := filepath.Join(saveDir, filename)

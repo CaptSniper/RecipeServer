@@ -1,4 +1,5 @@
 {
+  "default_image_path": "images/",
   "default_recipe_path": "recipes/",
   "display_ingredients_numbered": true,
   "display_steps_numbered": true,

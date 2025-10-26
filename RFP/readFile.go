@@ -5,6 +5,7 @@ import (
 	"encoding/binary"
 	"fmt"
 	"os"
+	"path/filepath"
 )
 
 // readChunk reads a single chunk from the buffer
@@ -28,8 +29,8 @@ func readChunk(buf *bytes.Reader) (chunkType string, payload []byte, err error) 
 }
 
 // ReadRecipeFile reads an RFP3 file into a Recipe struct
-func ReadRecipeFile(filename string) (*Recipe, error) {
-	data, err := os.ReadFile(filename)
+func ReadRecipeFile(filename, path string) (*Recipe, error) {
+	data, err := os.ReadFile(filepath.Join(path, filename))
 	if err != nil {
 		return nil, err
 	}
@@ -60,10 +61,29 @@ func ReadRecipeFile(filename string) (*Recipe, error) {
 
 		switch chunkType {
 		case "CORE":
-			binary.Read(rdr, binary.LittleEndian, &recipe.PrepTime)
-			binary.Read(rdr, binary.LittleEndian, &recipe.CookTime)
-			binary.Read(rdr, binary.LittleEndian, &recipe.AdditionalTime)
-			binary.Read(rdr, binary.LittleEndian, &recipe.TotalTime)
+			var pt uint16
+			binary.Read(rdr, binary.LittleEndian, &pt)
+			ptBytes := make([]byte, pt)
+			rdr.Read(ptBytes)
+			recipe.PrepTime = string(ptBytes)
+
+			var ct uint16
+			binary.Read(rdr, binary.LittleEndian, &ct)
+			ctBytes := make([]byte, ct)
+			rdr.Read(ctBytes)
+			recipe.CookTime = string(ctBytes)
+
+			var at uint16
+			binary.Read(rdr, binary.LittleEndian, &at)
+			atBytes := make([]byte, at)
+			rdr.Read(atBytes)
+			recipe.AdditionalTime = string(atBytes)
+
+			var tt uint16
+			binary.Read(rdr, binary.LittleEndian, &tt)
+			ttBytes := make([]byte, tt)
+			rdr.Read(ttBytes)
+			recipe.TotalTime = string(ttBytes)
 
 			var servings uint16
 			binary.Read(rdr, binary.LittleEndian, &servings)

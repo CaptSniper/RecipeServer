@@ -3,12 +3,13 @@ package main
 import (
 	"bufio"
 	"fmt"
+	"log"
 	"os"
 	"path/filepath"
-	"strconv"
 	"strings"
 
 	rfp "github.com/CaptSniper/RecipeServer/RFP"
+	ars "github.com/CaptSniper/RecipeServer/WebScraper"
 )
 
 func main() {
@@ -20,6 +21,7 @@ func main() {
 	fmt.Println("1) Create a recipe file")
 	fmt.Println("2) Read a recipe file")
 	fmt.Println("3) Create/Edit config")
+	fmt.Println("4) Scrape AllRecipes")
 	fmt.Print("> ")
 
 	var choice int
@@ -34,6 +36,8 @@ func main() {
 		readRecipe(reader)
 	case 3:
 		editConfig()
+	case 4:
+		ScrapeAS()
 	default:
 		fmt.Println("Unknown option")
 	}
@@ -89,7 +93,8 @@ func createRecipe(reader *bufio.Reader) {
 	reader.ReadString('\n')
 	path := filepath.Clean(filename)
 
-	if err := rfp.WriteRecipe(path, r); err != nil {
+	cfg, _ := rfp.LoadConfig()
+	if err := rfp.WriteRecipe(cfg.DefaultRecipePath, path, r); err != nil {
 		fmt.Println("Error writing recipe:", err)
 		return
 	}
@@ -97,20 +102,21 @@ func createRecipe(reader *bufio.Reader) {
 }
 
 func readRecipe(reader *bufio.Reader) {
-	fmt.Print("Filename to read (e.g., recipe.rfp): ")
+	fmt.Print("Recipe to read: ")
 	var filename string
-	fmt.Scan(&filename)
+	filename, _ = reader.ReadString('\n')
+	filename = strings.TrimSpace(filename)
 	path := filepath.Clean(filename)
+	cfg, _ := rfp.LoadConfig()
 
-	r, err := rfp.ReadRecipeFile(path)
+	r, err := rfp.ReadRecipeFile(path, cfg.DefaultRecipePath)
 	if err != nil {
 		fmt.Println("Error reading recipe:", err)
 		return
 	}
 
-	fmt.Println("\nRecipe Contents:")
 	fmt.Printf("Image Path: %s\n", r.ImagePath)
-	fmt.Printf("Prep: %d min, Cook: %d min, Additional: %d min, Total: %d min\n",
+	fmt.Printf("Prep: %s min, Cook: %s min, Additional: %s min, Total: %s min\n",
 		r.PrepTime, r.CookTime, r.AdditionalTime, r.TotalTime)
 	fmt.Printf("Servings: %s\n", r.Servings)
 
@@ -137,55 +143,38 @@ func editConfig() {
 		}
 	}
 
+	rfp.EditConfig(cfg)
+}
+
+func ScrapeAS() {
+	config, _ := rfp.LoadConfig()
+
 	reader := bufio.NewReader(os.Stdin)
-	fmt.Println("Edit configuration (press Enter to keep current value):")
+	var url string
+	fmt.Scan(&url)
+	reader.ReadString('\n')
 
-	// Helper functions
-	promptString := func(field, current string) string {
-		fmt.Printf("%s [%s]: ", field, current)
-		input, _ := reader.ReadString('\n')
-		input = strings.TrimSpace(input)
-		if input == "" {
-			return current
-		}
-		return input
+	recipe, err := ars.ScrapeAllRecipes(url, config.DefaultImagePath)
+	if err != nil {
+		log.Fatal(err)
 	}
 
-	promptInt := func(field string, current int) int {
-		fmt.Printf("%s [%d]: ", field, current)
-		input, _ := reader.ReadString('\n')
-		input = strings.TrimSpace(input)
-		if val, err := strconv.Atoi(input); err == nil {
-			return val
-		}
-		return current
+	fmt.Println("Image Path:", recipe.ImagePath)
+	fmt.Println("Prep Time:", recipe.PrepTime)
+	fmt.Println("Cook Time:", recipe.CookTime)
+	fmt.Println("Additional Time:", recipe.AdditionalTime)
+	fmt.Println("Total Time:", recipe.TotalTime)
+	fmt.Println("Servings:", recipe.Servings)
+
+	fmt.Println("\nIngredients:")
+	for _, ing := range recipe.Ingredients {
+		fmt.Printf("%s\n", ing)
 	}
 
-	promptBool := func(field string, current bool) bool {
-		fmt.Printf("%s [%t] (true/false): ", field, current)
-		input, _ := reader.ReadString('\n')
-		input = strings.TrimSpace(strings.ToLower(input))
-		if input == "true" {
-			return true
-		} else if input == "false" {
-			return false
-		}
-		return current
+	fmt.Println("\nSteps:")
+	for i, step := range recipe.Steps {
+		fmt.Printf("%d) %s\n", i+1, step)
 	}
 
-	// Prompt user for each field
-	cfg.DefaultRecipePath = promptString("Default Recipe path", cfg.DefaultRecipePath)
-	cfg.DisplayIngredientsNumbered = promptBool("Display ingredients numbered", cfg.DisplayIngredientsNumbered)
-	cfg.DisplayStepsNumbered = promptBool("Display steps numbered", cfg.DisplayStepsNumbered)
-	cfg.MaxIngredients = promptInt("Max ingredients", cfg.MaxIngredients)
-	cfg.MaxSteps = promptInt("Max steps", cfg.MaxSteps)
-
-	// Save updates
-	if err := rfp.SaveConfig(cfg); err != nil {
-		fmt.Println("Failed to save config:", err)
-		return
-	}
-
-	fmt.Println("Configuration updated successfully.")
-	fmt.Printf("%+v\n", *cfg)
+	rfp.WriteRecipe(config.DefaultRecipePath, recipe.Name, *recipe)
 }
