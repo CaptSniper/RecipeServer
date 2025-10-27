@@ -17,6 +17,7 @@ type Config struct {
 	DisplayStepsNumbered       bool   `json:"display_steps_numbered"`
 	MaxIngredients             int    `json:"max_ingredients"`
 	MaxSteps                   int    `json:"max_steps"`
+	DefaultPort                int    `json:"default_port"`
 }
 
 // LoadConfig reads the JSON config from .config/config.json relative to the repo root
@@ -93,6 +94,7 @@ func CreateConfig() (*Config, error) {
 		DisplayStepsNumbered:       true,
 		MaxIngredients:             50,
 		MaxSteps:                   100,
+		DefaultPort:                26740,
 	}
 
 	// Write to config.json
@@ -152,6 +154,7 @@ func EditConfig(cfg *Config) {
 	cfg.DisplayStepsNumbered = promptBool("Display steps numbered", cfg.DisplayStepsNumbered)
 	cfg.MaxIngredients = promptInt("Max ingredients", cfg.MaxIngredients)
 	cfg.MaxSteps = promptInt("Max steps", cfg.MaxSteps)
+	cfg.DefaultPort = promptInt("Default Port", cfg.DefaultPort)
 
 	// Save updates
 	if err := SaveConfig(cfg); err != nil {

@@ -29,7 +29,7 @@ func readChunk(buf *bytes.Reader) (chunkType string, payload []byte, err error) 
 }
 
 // ReadRecipeFile reads an RFP3 file into a Recipe struct
-func ReadRecipeFile(filename, path string) (*Recipe, error) {
+func ReadRecipeFile(path, filename string) (*Recipe, error) {
 	data, err := os.ReadFile(filepath.Join(path, filename))
 	if err != nil {
 		return nil, err

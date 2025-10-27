@@ -1,6 +1,7 @@
 package ars
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 	"strings"
@@ -18,6 +19,15 @@ type Ingredient struct {
 	Quantity string
 	Unit     string
 	Name     string
+}
+
+func ScrapeRecipe(url, imagePath string) (*rfp.Recipe, error) {
+	if strings.Contains(url, "allrecipes.com") {
+		return ScrapeAllRecipes(url, imagePath)
+	} else {
+		err := errors.New("unsupported base website")
+		return nil, err
+	}
 }
 
 // ScrapeAllRecipes fetches a URL from AllRecipes and extracts structured recipe data
@@ -45,8 +55,6 @@ func ScrapeAllRecipes(url, imagePath string) (*rfp.Recipe, error) {
 
 	// --- 1. Image ---
 	doc.Find("div#photo-dialog__item_1-0 img").Each(func(i int, s *goquery.Selection) {
-		fmt.Println(s)
-		fmt.Println(s.Attr("src"))
 		if src, exists := s.Attr("src"); exists && src != "" {
 			DownloadImage(src, imagePath, data.Name)
 			data.ImagePath = imagePath + "\\" + data.Name
@@ -69,7 +77,6 @@ func ScrapeAllRecipes(url, imagePath string) (*rfp.Recipe, error) {
 			data.AdditionalTime = value
 		case "servings:":
 			data.Servings = value
-			fmt.Println(value)
 		}
 	})
 

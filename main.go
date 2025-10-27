@@ -10,36 +10,41 @@ import (
 
 	rfp "github.com/CaptSniper/RecipeServer/RFP"
 	ars "github.com/CaptSniper/RecipeServer/WebScraper"
+	server "github.com/CaptSniper/RecipeServer/apiServer"
 )
 
 func main() {
 	reader := bufio.NewReader(os.Stdin)
 
-	fmt.Println("Recipe File Program")
-	fmt.Println("-------------------")
-	fmt.Println("Choose an option:")
-	fmt.Println("1) Create a recipe file")
-	fmt.Println("2) Read a recipe file")
-	fmt.Println("3) Create/Edit config")
-	fmt.Println("4) Scrape AllRecipes")
-	fmt.Print("> ")
+	for {
+		fmt.Println("Recipe File Program")
+		fmt.Println("-------------------")
+		fmt.Println("Choose an option:")
+		fmt.Println("1) Create a recipe file")
+		fmt.Println("2) Read a recipe file")
+		fmt.Println("3) Create/Edit config")
+		fmt.Println("4) Scrape AllRecipes")
+		fmt.Println("5) Start API Server")
+		fmt.Print("> ")
 
-	var choice int
-	fmt.Scan(&choice)
+		var choice int
+		fmt.Scan(&choice)
 
-	reader.ReadString('\n')
-
-	switch choice {
-	case 1:
-		createRecipe(reader)
-	case 2:
-		readRecipe(reader)
-	case 3:
-		editConfig()
-	case 4:
-		ScrapeAS()
-	default:
-		fmt.Println("Unknown option")
+		reader.ReadString('\n')
+		switch choice {
+		case 1:
+			createRecipe(reader)
+		case 2:
+			readRecipe(reader)
+		case 3:
+			editConfig()
+		case 4:
+			ScrapeAS()
+		case 5:
+			server.StartServer()
+		default:
+			fmt.Println("Unknown option")
+		}
 	}
 }
 
