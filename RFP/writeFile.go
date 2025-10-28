@@ -42,19 +42,25 @@ func WriteRecipe(dir, filename string, r Recipe) error {
 
 	// --- CORE CHUNK ---
 	corePayload := &bytes.Buffer{}
-	binary.Write(corePayload, binary.LittleEndian, uint16(len(r.PrepTime)))
-	corePayload.WriteString(r.PrepTime)
-	binary.Write(corePayload, binary.LittleEndian, uint16(len(r.CookTime)))
-	corePayload.WriteString(r.CookTime)
-	binary.Write(corePayload, binary.LittleEndian, uint16(len(r.AdditionalTime)))
-	corePayload.WriteString(r.AdditionalTime)
-	binary.Write(corePayload, binary.LittleEndian, uint16(len(r.TotalTime)))
-	corePayload.WriteString(r.TotalTime)
-	binary.Write(corePayload, binary.LittleEndian, uint16(len(r.Servings)))
-	corePayload.WriteString(r.Servings)
 
+	// write property count
+	binary.Write(corePayload, binary.LittleEndian, uint16(len(r.CoreProps)))
+
+	// write properties (key/value pairs)
+	for k, v := range r.CoreProps {
+		binary.Write(corePayload, binary.LittleEndian, uint16(len(k)))
+		corePayload.WriteString(k)
+		binary.Write(corePayload, binary.LittleEndian, uint16(len(v)))
+		corePayload.WriteString(v)
+	}
+
+	// write image path
 	binary.Write(corePayload, binary.LittleEndian, uint16(len(r.ImagePath)))
 	corePayload.WriteString(r.ImagePath)
+
+	// write name last
+	binary.Write(corePayload, binary.LittleEndian, uint16(len(r.Name)))
+	corePayload.WriteString(r.Name)
 
 	writeChunk(buf, "CORE", corePayload.Bytes())
 	chunkCount++

@@ -48,7 +48,7 @@ func ScrapeAllRecipes(url, imagePath string) (*rfp.Recipe, error) {
 		return nil, fmt.Errorf("failed to parse HTML: %v", err)
 	}
 
-	data := &rfp.Recipe{}
+	data := rfp.NewRecipe()
 
 	recipeName := strings.TrimSpace(doc.Find("div#article-header--recipe_1-0 h1").First().Text())
 	data.Name = recipeName
@@ -68,15 +68,15 @@ func ScrapeAllRecipes(url, imagePath string) (*rfp.Recipe, error) {
 
 		switch strings.ToLower(label) {
 		case "prep time:":
-			data.PrepTime = value
+			data.CoreProps["prep time"] = value
 		case "cook time:":
-			data.CookTime = value
+			data.CoreProps["cook time"] = value
 		case "total time:":
-			data.TotalTime = value
+			data.CoreProps["total time"] = value
 		case "additional time:":
-			data.AdditionalTime = value
+			data.CoreProps["additional time"] = value
 		case "servings:":
-			data.Servings = value
+			data.CoreProps["servings"] = value
 		}
 	})
 

@@ -50,26 +50,41 @@ func main() {
 
 func createRecipe(reader *bufio.Reader) {
 	var r rfp.Recipe
+	r.CoreProps = make(map[string]string)
 
+	// Name (required)
+	fmt.Print("Recipe name: ")
+	r.Name, _ = reader.ReadString('\n')
+	r.Name = strings.TrimSpace(r.Name)
+
+	// Image path
 	fmt.Print("Image path: ")
 	r.ImagePath, _ = reader.ReadString('\n')
 	r.ImagePath = strings.TrimSpace(r.ImagePath)
 
-	fmt.Print("Prep time (min): ")
-	fmt.Scan(&r.PrepTime)
-	fmt.Print("Cook time (min): ")
-	fmt.Scan(&r.CookTime)
-	fmt.Print("Additional time (min): ")
-	fmt.Scan(&r.AdditionalTime)
-	fmt.Print("Total time (min): ")
-	fmt.Scan(&r.TotalTime)
-	fmt.Print("Number of servings: ")
-	fmt.Scan(&r.Servings)
+	// Core properties
+	fmt.Println("\nEnter recipe properties (e.g. Prep Time: 15 mins, Servings: 4).")
+	fmt.Println("Press Enter on an empty line when done.")
+	for {
+		fmt.Print("> ")
+		line, _ := reader.ReadString('\n')
+		line = strings.TrimSpace(line)
+		if line == "" {
+			break
+		}
 
-	reader.ReadString('\n')
+		parts := strings.SplitN(line, ":", 2)
+		if len(parts) != 2 {
+			fmt.Println("Invalid format. Use 'Key: Value'")
+			continue
+		}
+		key := strings.TrimSpace(parts[0])
+		value := strings.TrimSpace(parts[1])
+		r.CoreProps[key] = value
+	}
 
 	// Ingredients
-	fmt.Println("Enter ingredients (empty line to finish):")
+	fmt.Println("\nEnter ingredients (empty line to finish):")
 	for {
 		fmt.Print("> ")
 		line, _ := reader.ReadString('\n')
@@ -81,7 +96,7 @@ func createRecipe(reader *bufio.Reader) {
 	}
 
 	// Steps
-	fmt.Println("Enter steps (empty line to finish):")
+	fmt.Println("\nEnter steps (empty line to finish):")
 	for {
 		fmt.Print("> ")
 		line, _ := reader.ReadString('\n')
@@ -92,7 +107,8 @@ func createRecipe(reader *bufio.Reader) {
 		r.Steps = append(r.Steps, line)
 	}
 
-	fmt.Print("Filename to save (e.g., recipe.rfp): ")
+	// Save
+	fmt.Print("\nFilename to save (e.g., recipe.rfp): ")
 	var filename string
 	fmt.Scan(&filename)
 	reader.ReadString('\n')
@@ -122,8 +138,8 @@ func readRecipe(reader *bufio.Reader) {
 
 	fmt.Printf("Image Path: %s\n", r.ImagePath)
 	fmt.Printf("Prep: %s min, Cook: %s min, Additional: %s min, Total: %s min\n",
-		r.PrepTime, r.CookTime, r.AdditionalTime, r.TotalTime)
-	fmt.Printf("Servings: %s\n", r.Servings)
+		r.CoreProps["prep time"], r.CoreProps["cook time"], r.CoreProps["additional time"], r.CoreProps["total time"])
+	fmt.Printf("Servings: %s\n", r.CoreProps["servings"])
 
 	fmt.Println("\nIngredients:")
 	for i, ing := range r.Ingredients {
@@ -165,11 +181,11 @@ func ScrapeAS() {
 	}
 
 	fmt.Println("Image Path:", recipe.ImagePath)
-	fmt.Println("Prep Time:", recipe.PrepTime)
-	fmt.Println("Cook Time:", recipe.CookTime)
-	fmt.Println("Additional Time:", recipe.AdditionalTime)
-	fmt.Println("Total Time:", recipe.TotalTime)
-	fmt.Println("Servings:", recipe.Servings)
+	fmt.Println("Prep Time:", recipe.CoreProps["prep time"])
+	fmt.Println("Cook Time:", recipe.CoreProps["cook time"])
+	fmt.Println("Additional Time:", recipe.CoreProps["additional time"])
+	fmt.Println("Total Time:", recipe.CoreProps["total time"])
+	fmt.Println("Servings:", recipe.CoreProps["servings"])
 
 	fmt.Println("\nIngredients:")
 	for _, ing := range recipe.Ingredients {

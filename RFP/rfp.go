@@ -2,13 +2,17 @@ package rfp
 
 // Recipe stores essential information needed for rendering
 type Recipe struct {
-	Name           string
-	ImagePath      string   // Relative or absolute image path
-	PrepTime       string   // Preparation time in minutes
-	CookTime       string   // Cooking time in minutes
-	AdditionalTime string   // Additional time in minutes (e.g., resting, marinating)
-	TotalTime      string   // Total time in minutes
-	Servings       string   // Number of servings
-	Ingredients    []string // List of ingredients (text only for rendering)
-	Steps          []string // Ordered list of preparation steps
+	Name        string
+	ImagePath   string
+	CoreProps   map[string]string // e.g. {"Prep Time": "15 mins", "Servings": "6"}
+	Ingredients []string
+	Steps       []string
+}
+
+func NewRecipe() *Recipe {
+	return &Recipe{
+		CoreProps:   make(map[string]string),
+		Ingredients: []string{},
+		Steps:       []string{},
+	}
 }

@@ -61,41 +61,36 @@ func ReadRecipeFile(path, filename string) (*Recipe, error) {
 
 		switch chunkType {
 		case "CORE":
-			var pt uint16
-			binary.Read(rdr, binary.LittleEndian, &pt)
-			ptBytes := make([]byte, pt)
-			rdr.Read(ptBytes)
-			recipe.PrepTime = string(ptBytes)
+			var propCount uint16
+			binary.Read(rdr, binary.LittleEndian, &propCount)
 
-			var ct uint16
-			binary.Read(rdr, binary.LittleEndian, &ct)
-			ctBytes := make([]byte, ct)
-			rdr.Read(ctBytes)
-			recipe.CookTime = string(ctBytes)
+			recipe.CoreProps = make(map[string]string)
 
-			var at uint16
-			binary.Read(rdr, binary.LittleEndian, &at)
-			atBytes := make([]byte, at)
-			rdr.Read(atBytes)
-			recipe.AdditionalTime = string(atBytes)
+			for i := 0; i < int(propCount); i++ {
+				var kLen uint16
+				binary.Read(rdr, binary.LittleEndian, &kLen)
+				kBytes := make([]byte, kLen)
+				rdr.Read(kBytes)
 
-			var tt uint16
-			binary.Read(rdr, binary.LittleEndian, &tt)
-			ttBytes := make([]byte, tt)
-			rdr.Read(ttBytes)
-			recipe.TotalTime = string(ttBytes)
+				var vLen uint16
+				binary.Read(rdr, binary.LittleEndian, &vLen)
+				vBytes := make([]byte, vLen)
+				rdr.Read(vBytes)
 
-			var servings uint16
-			binary.Read(rdr, binary.LittleEndian, &servings)
-			servingsBytes := make([]byte, servings)
-			rdr.Read(servingsBytes)
-			recipe.Servings = string(servingsBytes)
+				recipe.CoreProps[string(kBytes)] = string(vBytes)
+			}
 
 			var pathLen uint16
 			binary.Read(rdr, binary.LittleEndian, &pathLen)
 			pathBytes := make([]byte, pathLen)
 			rdr.Read(pathBytes)
 			recipe.ImagePath = string(pathBytes)
+
+			var nameLen uint16
+			binary.Read(rdr, binary.LittleEndian, &nameLen)
+			nameBytes := make([]byte, nameLen)
+			rdr.Read(nameBytes)
+			recipe.Name = string(nameBytes)
 
 		case "INGR":
 			var strLen uint16
