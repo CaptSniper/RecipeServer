@@ -11,7 +11,7 @@ import (
 	"strings"
 
 	rfp "github.com/CaptSniper/RecipeServer/RFP"
-	ars "github.com/CaptSniper/RecipeServer/WebScraper"
+	ars "github.com/CaptSniper/RecipeServer/webScraper"
 	"github.com/gorilla/mux"
 )
 

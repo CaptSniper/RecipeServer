@@ -9,8 +9,8 @@ import (
 	"strings"
 
 	rfp "github.com/CaptSniper/RecipeServer/RFP"
-	ars "github.com/CaptSniper/RecipeServer/WebScraper"
 	apiServer "github.com/CaptSniper/RecipeServer/apiServer"
+	ars "github.com/CaptSniper/RecipeServer/webScraper"
 	webServer "github.com/CaptSniper/RecipeServer/webServer"
 )
 
