@@ -1,0 +1,50 @@
+#root {
+  width: 80%;
+  display: flex;
+  justify-content: center;
+}
+
+.card {
+  background: #ffffff;
+  padding: 2rem;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+  border-radius: 8px;
+  margin-bottom: 2rem;
+  text-align: left;
+}
+
+.recipe-list button {
+  margin-left: 1rem;
+}
+
+.form-group {
+  margin-bottom: 1rem;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 0.3rem;
+  font-weight: 500;
+}
+
+.form-group input,
+.form-group textarea {
+  width: 100%;
+}
+
+h1, h2 {
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
+
+button.primary {
+  background-color: #1a73e8;
+  color: #fff;
+  border: none;
+}
+
+button.primary:hover {
+  background-color: #1558b0;
+}
+
+

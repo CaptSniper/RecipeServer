@@ -10,7 +10,8 @@ import (
 
 	rfp "github.com/CaptSniper/RecipeServer/RFP"
 	ars "github.com/CaptSniper/RecipeServer/WebScraper"
-	server "github.com/CaptSniper/RecipeServer/apiServer"
+	apiServer "github.com/CaptSniper/RecipeServer/apiServer"
+	webServer "github.com/CaptSniper/RecipeServer/webServer"
 )
 
 func main() {
@@ -41,7 +42,9 @@ func main() {
 		case 4:
 			ScrapeAS()
 		case 5:
-			server.StartServer()
+			go apiServer.StartServer()
+		case 6:
+			go webServer.StartServer()
 		default:
 			fmt.Println("Unknown option")
 		}
