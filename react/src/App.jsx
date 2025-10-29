@@ -10,7 +10,7 @@ function App() {
     <Router>
       <Routes>
         <Route path="/" element={<RecipeList />} />
-        <Route path="/recipes" element={<RecipeList />} />
+        <Route path="/recipes" element={<RecipeList key={location.pathname}/>} />
         <Route path="/recipe/:id" element={<RecipeDetail />} />
         <Route path="/new" element={<RecipeForm />} />
         <Route path="/scrape" element={<ScrapeRecipe />} />

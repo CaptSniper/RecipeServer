@@ -66,6 +66,7 @@ export default function ScrapeRecipe() {
 
   return (
     <div>
+      <button onClick={() => navigate('/recipes')}>Back to cookbook</button>
       <h1>{id ? 'Edit Recipe' : 'Scrape Recipe'}</h1>
       {!recipe && (
         <div>
@@ -74,7 +75,6 @@ export default function ScrapeRecipe() {
             placeholder="Enter recipe URL"
             value={url}
             onChange={e => setUrl(e.target.value)}
-            style={{ width: '400px' }}
           />
           <button onClick={handleScrape} disabled={loading}>
             {loading ? 'Scraping...' : 'Scrape'}

@@ -1,5 +1,5 @@
 #root {
-  width: 100%;
+  width: 80%;
   display: flex;
   justify-content: center;
 }
@@ -46,3 +46,5 @@ button.primary {
 button.primary:hover {
   background-color: #1558b0;
 }
+
+

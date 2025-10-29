@@ -164,7 +164,8 @@ func updateRecipeHandler(w http.ResponseWriter, r *http.Request) {
 
 // deleteRecipeHandler – deletes a recipe
 func deleteRecipeHandler(w http.ResponseWriter, r *http.Request) {
-	id := r.PathValue("id")
+	vars := mux.Vars(r)
+	id := vars["id"]
 	if id == "" {
 		http.Error(w, "Missing recipe ID", http.StatusBadRequest)
 		return

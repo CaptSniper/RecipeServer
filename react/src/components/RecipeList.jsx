@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router-dom';
 export default function RecipeList() {
   const [recipes, setRecipes] = useState([]);
   const [loading, setLoading] = useState(true);
-  const navigate = useNavigate();
+  const navigate = useNavigate()
 
   useEffect(() => {
     const loadRecipes = async () => {
@@ -42,17 +42,19 @@ export default function RecipeList() {
   if (loading) return <p>Loading recipes...</p>;
 
   if (!recipes.length) return (
-    <div>
-      <h1>Recipes</h1>
+    <div class="main-column">
+      <h1>Digital Cookbook</h1>
       <p>No recipes found.</p>
       <button onClick={() => navigate('/new')}>New Recipe</button>
+      <button onClick={() => navigate('/scrape')}>Pull recipe from a website</button>
     </div>
   );
 
   return (
-    <div>
-      <h1>Recipes</h1>
+    <div class="main-column">
+      <h1>Digital Cookbook</h1>
       <button onClick={() => navigate('/new')}>New Recipe</button>
+      <button onClick={() => navigate('/scrape')}>Pull recipe from a website</button>
       <ul>
         {recipes.map(r => (
           <li key={r.id}>
