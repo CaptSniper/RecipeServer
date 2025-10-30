@@ -23,7 +23,7 @@ endif
 
 # Build for current OS
 build: $(BIN_DIR)
-	$(GO) build -o $(BIN_DIR)/$(APP_NAME)$(EXE) main.go
+	$(GO) build -o $(BIN_DIR)/$(APP_NAME)$(EXE) .
 
 # Build Linux 64-bit binary (from any OS)
 # linux64: $(BIN_DIR)

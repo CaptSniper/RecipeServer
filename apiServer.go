@@ -1,4 +1,4 @@
-package apiServer
+package main
 
 import (
 	"encoding/json"
@@ -27,7 +27,7 @@ type ScrapeRequest struct {
 	Save bool   `json:"save"`
 }
 
-func StartServer() {
+func StartApiServer() {
 	cfg, _ := rfp.LoadConfig()
 	r := mux.NewRouter().StrictSlash(true)
 
