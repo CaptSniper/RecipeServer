@@ -1,4 +1,7 @@
 # Hostable Digital Cookbook
+
+### Currently only pulls from allrecipes.com
+
 ### Compile from source
 This project was developed with Golang 1.25.3 on Windows. Building with Linux is not currently supported, but should not be difficult with the basic `go build` for Linux.
 To build the recipe_tool.exe, run the following command in the root of the project folder.
