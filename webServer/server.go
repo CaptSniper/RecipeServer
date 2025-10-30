@@ -33,17 +33,6 @@ func StartServer() {
 	proxy := httputil.NewSingleHostReverseProxy(apiURL)
 
 	http.HandleFunc("/api/", func(w http.ResponseWriter, r *http.Request) {
-		// --- CORS headers ---
-		w.Header().Set("Access-Control-Allow-Origin", "*") // or restrict to your React URL
-		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
-		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
-
-		// Handle preflight
-		if r.Method == http.MethodOptions {
-			w.WriteHeader(http.StatusOK)
-			return
-		}
-
 		// Strip /api prefix so API server sees correct path
 		r.URL.Path = strings.TrimPrefix(r.URL.Path, "/api")
 		r.Host = apiURL.Host

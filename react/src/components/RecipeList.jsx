@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { fetchRecipes, deleteRecipe } from '../api/recipes';
-import { useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
+import './RecipeList.css';
 
 export default function RecipeList() {
   const [recipes, setRecipes] = useState([]);
   const [loading, setLoading] = useState(true);
-  const navigate = useNavigate()
 
   useEffect(() => {
     const loadRecipes = async () => {
@@ -42,29 +42,26 @@ export default function RecipeList() {
   if (loading) return <p>Loading recipes...</p>;
 
   if (!recipes.length) return (
-    <div class="main-column">
+    <div className="recipe-list-container">
       <h1>Digital Cookbook</h1>
       <p>No recipes found.</p>
-      <button onClick={() => navigate('/new')}>New Recipe</button>
-      <button onClick={() => navigate('/scrape')}>Pull recipe from a website</button>
     </div>
   );
 
   return (
-    <div class="main-column">
+    <div className="recipe-list-container">
       <h1>Digital Cookbook</h1>
-      <button onClick={() => navigate('/new')}>New Recipe</button>
-      <button onClick={() => navigate('/scrape')}>Pull recipe from a website</button>
-      <ul>
+      <ul className="recipe-list">
         {recipes.map(r => (
-          <li key={r.id}>
-            <span
-              onClick={() => navigate(`/recipe/${r.id}`)}
-              style={{ cursor: 'pointer', textDecoration: 'underline' }}
+          <li key={r.id} className="recipe-item">
+            <Link to={`/recipe/${r.id}`} className="recipe-link">
+              <span className="recipe-name">{r.name}</span>
+            </Link>
+            <button
+              onClick={() => handleDelete(r.id)}
+              className="delete-button"
+              aria-label={`Delete ${r.name}`}
             >
-              {r.name}
-            </span>
-            <button onClick={() => handleDelete(r.id)} style={{ marginLeft: '10px' }}>
               Delete
             </button>
           </li>
