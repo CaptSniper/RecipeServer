@@ -115,7 +115,11 @@ func createRecipe(reader *bufio.Reader) {
 	reader.ReadString('\n')
 	path := filepath.Clean(filename)
 
-	cfg, _ := rfp.LoadConfig()
+	cfg, err := rfp.LoadConfig()
+	if err != nil {
+		fmt.Println("Failed to load config:", err)
+		return
+	}
 	if err := rfp.WriteRecipe(cfg.DefaultRecipePath, path, r); err != nil {
 		fmt.Println("Error writing recipe:", err)
 		return
@@ -129,8 +133,11 @@ func readRecipe(reader *bufio.Reader) {
 	filename, _ = reader.ReadString('\n')
 	filename = strings.TrimSpace(filename)
 	path := filepath.Clean(filename)
-	cfg, _ := rfp.LoadConfig()
-
+	cfg, err := rfp.LoadConfig()
+	if err != nil {
+		fmt.Println("Failed to load config:", err)
+		return
+	}
 	r, err := rfp.ReadRecipeFile(path, cfg.DefaultRecipePath)
 	if err != nil {
 		fmt.Println("Error reading recipe:", err)
@@ -169,7 +176,11 @@ func editConfig() {
 }
 
 func ScrapeAS() {
-	config, _ := rfp.LoadConfig()
+	config, err := rfp.LoadConfig()
+	if err != nil {
+		fmt.Println("Failed to load config:", err)
+		return
+	}
 
 	reader := bufio.NewReader(os.Stdin)
 	var url string

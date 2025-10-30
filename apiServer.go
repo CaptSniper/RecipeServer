@@ -28,7 +28,11 @@ type ScrapeRequest struct {
 }
 
 func StartApiServer() {
-	cfg, _ := rfp.LoadConfig()
+	cfg, err := rfp.LoadConfig()
+	if err != nil {
+		fmt.Println("Failed to load config. Try running option 3 to create a default config:", err)
+		return
+	}
 	r := mux.NewRouter().StrictSlash(true)
 
 	r.HandleFunc("/recipes", listRecipesHandler).Methods("GET")
@@ -44,7 +48,11 @@ func StartApiServer() {
 
 // listRecipesHandler – lists all recipes by name and ID
 func listRecipesHandler(w http.ResponseWriter, r *http.Request) {
-	cfg, _ := rfp.LoadConfig()
+	cfg, err := rfp.LoadConfig()
+	if err != nil {
+		http.Error(w, "Failed to load config", http.StatusInternalServerError)
+		return
+	}
 	files, err := os.ReadDir(cfg.DefaultRecipePath)
 	if err != nil {
 		http.Error(w, "Failed to read recipe directory", http.StatusInternalServerError)
@@ -79,7 +87,11 @@ func getRecipeHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	cfg, _ := rfp.LoadConfig()
+	cfg, err := rfp.LoadConfig()
+	if err != nil {
+		http.Error(w, "Failed to load config", http.StatusInternalServerError)
+		return
+	}
 
 	recipe, err := rfp.ReadRecipeFile(cfg.DefaultRecipePath, id+".rfp")
 	if err != nil {
@@ -111,7 +123,11 @@ func createRecipeHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	cfg, _ := rfp.LoadConfig()
+	cfg, err := rfp.LoadConfig()
+	if err != nil {
+		http.Error(w, "Failed to load config", http.StatusInternalServerError)
+		return
+	}
 	id := strings.ReplaceAll(strings.ToLower(recipe.Name), " ", "_")
 
 	if err := rfp.WriteRecipe(cfg.DefaultRecipePath, id+".rfp", recipe); err != nil {
@@ -135,7 +151,11 @@ func updateRecipeHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	cfg, _ := rfp.LoadConfig()
+	cfg, err := rfp.LoadConfig()
+	if err != nil {
+		http.Error(w, "Failed to load config", http.StatusInternalServerError)
+		return
+	}
 	recipePath := filepath.Join(cfg.DefaultRecipePath, id+".rfp")
 
 	if _, err := os.Stat(recipePath); os.IsNotExist(err) {
@@ -171,7 +191,11 @@ func deleteRecipeHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	cfg, _ := rfp.LoadConfig()
+	cfg, err := rfp.LoadConfig()
+	if err != nil {
+		http.Error(w, "Failed to load config", http.StatusInternalServerError)
+		return
+	}
 	recipePath := filepath.Join(cfg.DefaultRecipePath, id+".rfp")
 
 	if err := os.Remove(recipePath); err != nil {

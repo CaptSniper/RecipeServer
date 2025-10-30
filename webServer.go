@@ -21,7 +21,11 @@ const frontendDir = "./react/dist"
 var EmbeddedFiles embed.FS
 
 func StartWebServer() {
-	cfg, _ := rfp.LoadConfig()
+	cfg, err := rfp.LoadConfig()
+	if err != nil {
+		log.Println("Failed to load config. Try running option 3 to create a default config:", err)
+		return
+	}
 
 	apiTarget := "http://localhost:" + strconv.Itoa(cfg.DefaultPort)
 

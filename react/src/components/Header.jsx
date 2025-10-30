@@ -22,7 +22,7 @@ export default function Header() {
     <header className="header">
       <div className="header-container">
         <Link to="/" className="header-logo" onClick={closeMenu}>
-          Recipe Book
+          Digital Cookbook
         </Link>
 
         {/* Desktop Navigation */}

@@ -43,14 +43,14 @@ export default function RecipeList() {
 
   if (!recipes.length) return (
     <div className="recipe-list-container">
-      <h1>Digital Cookbook</h1>
+      <h1>Recipes</h1>
       <p>No recipes found.</p>
     </div>
   );
 
   return (
     <div className="recipe-list-container">
-      <h1>Digital Cookbook</h1>
+      <h1>Recipes</h1>
       <ul className="recipe-list">
         {recipes.map(r => (
           <li key={r.id} className="recipe-item">
