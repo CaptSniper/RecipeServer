@@ -7,15 +7,19 @@ import (
 	"net/url"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
+
+	rfp "github.com/CaptSniper/RecipeServer/RFP"
 )
 
-const (
-	frontendDir = "./react/dist"
-	apiTarget   = "http://localhost:8000"
-)
+const frontendDir = "./react/dist"
 
 func StartServer() {
+	cfg, _ := rfp.LoadConfig()
+
+	apiTarget := "http://localhost:" + strconv.Itoa(cfg.DefaultPort)
+
 	distPath, err := filepath.Abs(frontendDir)
 	if err != nil {
 		log.Fatalf("Failed to resolve dist directory: %v", err)
@@ -29,17 +33,6 @@ func StartServer() {
 	proxy := httputil.NewSingleHostReverseProxy(apiURL)
 
 	http.HandleFunc("/api/", func(w http.ResponseWriter, r *http.Request) {
-		// --- CORS headers ---
-		w.Header().Set("Access-Control-Allow-Origin", "*") // or restrict to your React URL
-		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
-		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
-
-		// Handle preflight
-		if r.Method == http.MethodOptions {
-			w.WriteHeader(http.StatusOK)
-			return
-		}
-
 		// Strip /api prefix so API server sees correct path
 		r.URL.Path = strings.TrimPrefix(r.URL.Path, "/api")
 		r.Host = apiURL.Host
@@ -66,10 +59,10 @@ func StartServer() {
 		http.ServeFile(w, r, filepath.Join(distPath, "index.html"))
 	})
 
-	log.Println("Frontend server running at http://localhost:3000")
+	log.Println("Frontend server running at http://localhost:" + strconv.Itoa(cfg.DefaultWebPort))
 	log.Println("Proxy: /api →", apiTarget)
 
-	if err := http.ListenAndServe(":3000", nil); err != nil {
+	if err := http.ListenAndServe(":"+strconv.Itoa(cfg.DefaultWebPort), nil); err != nil {
 		log.Fatalf("Server error: %v", err)
 	}
 }
